@@ -33,7 +33,10 @@ lerna-debug.log*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
-!.vscode/extensions.json
+!.vscode/extensions.
+
+# Ignorar la carpeta docker-entrypoint-initdb.d
+docker-entrypoint-initdb.d/
 
 # dotenv environment variable files
 .env

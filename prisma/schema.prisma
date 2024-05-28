@@ -13,3 +13,10 @@ model compras {
   price    Float
   estado   String @db.VarChar(255)
 }
+
+model solicitud {
+  id     Int    @id @default(autoincrement())
+  correo String @db.VarChar(255)
+  itemid Int
+  estado String @db.VarChar(255)
+}
