@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateSolicitudDto } from '../dto/create-solicitud.dto';
+import { ProducerService } from '../kafka/producer.service';
 
 @Injectable()
 export class SolicitudService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private producerService: ProducerService) {}
 
   async create(data: CreateSolicitudDto) {
     //get name with itemid
@@ -24,11 +25,27 @@ export class SolicitudService {
         estado: 'recibido',
       },
     });
+    await this.producerService.produce({
+      topic: 'solicitudes-topic',
+      messages: [{ value: JSON.stringify({ id: solicitud.id, estado: 'recibido' }) }],
+    });
     //return the request
     return {
       ...solicitud,
       itemname: compra.itemname,
       price: compra.price,
     };
+  }
+  async findById(id: number) {
+      return this.prisma.solicitud.findUnique({
+          where: { id },
+      });
+  }
+
+  async updateStatus(id: number, estado: string) {
+      return this.prisma.solicitud.update({
+          where: { id },
+          data: { estado },
+      });
   }
 }
