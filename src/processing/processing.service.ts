@@ -6,7 +6,7 @@ import { ProducerService } from '../kafka/producer.service';
 @Injectable()
 export class ProcessingService implements OnModuleInit, OnApplicationShutdown {
   private readonly estados = ['recibido', 'preparando', 'entregando', 'finalizado'];
-  private readonly estadoInterval = 1000; //1 sec
+  private readonly interval = 1000; //1 sec
 
   constructor(
     private readonly consumerService: ConsumerService,
@@ -42,7 +42,7 @@ export class ProcessingService implements OnModuleInit, OnApplicationShutdown {
           topic: 'solicitudes-topic',
           messages: [{ value: JSON.stringify({ id, estado: nextState }) }],
         });
-      }, this.estadoInterval);
+      }, this.interval);
     }
   }
 
