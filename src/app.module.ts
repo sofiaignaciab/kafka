@@ -4,10 +4,12 @@ import { AppService } from './app.service';
 import { KafkaModule } from './kafka/kafka.module';
 import { TestConsumer } from './test.consumer';
 import { PrismaService } from './prisma.service';
+import { SolicitudService } from './solicitudes/solicitud.service';
+import { SolicitudController } from './solicitudes/solicitud.controller';
 
 @Module({
   imports: [KafkaModule],
-  controllers: [AppController],
-  providers: [AppService, TestConsumer, PrismaService],
+  controllers: [AppController, SolicitudController],
+  providers: [AppService, TestConsumer, PrismaService, SolicitudService],
 })
 export class AppModule {}
