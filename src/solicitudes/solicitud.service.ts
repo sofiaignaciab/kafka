@@ -28,6 +28,7 @@ export class SolicitudService {
     return {
       ...solicitud,
       itemname: compra.itemname,
+      price: compra.price,
     };
   }
 }
