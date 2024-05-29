@@ -10,14 +10,26 @@ export class ConsumerService implements OnApplicationShutdown{
 
     async consume(topic: ConsumerSubscribeTopic, config: ConsumerRunConfig){ //specify the implementation
         const consumer = this.kafka.consumer({groupId: 'nestjs-kafka'});
-        await consumer.connect(); //connect the consumer to the server
-        await consumer.subscribe(topic); //listens to the correct topic
-        await consumer.run(config); //run the code whenever the message is received
-        this.consumers.push(consumer);
+        try{
+
+            await consumer.connect(); //connect the consumer to the server
+            await consumer.subscribe(topic); //listens to the correct topic
+            await consumer.run(config); //run the code whenever the message is received
+            this.consumers.push(consumer);
+        }
+        catch(error){
+            console.error(`Error connecting or subscribing to topic ${topic.topic}`)
+        }
     }
     async onApplicationShutdown() {
         for(const consumer of this.consumers){
-            await consumer.disconnect();
+            try{
+
+                await consumer.disconnect();
+            }
+            catch(error){
+                console.error('Error disconnecting consumer:', error)
+            }
         }
     }
 }

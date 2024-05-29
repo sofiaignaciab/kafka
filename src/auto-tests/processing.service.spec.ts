@@ -22,19 +22,19 @@ describe('ProcessingService', () => {
   });
 
   it('should process solicitud and update state', async () => {
-    const solicitud = { id: 1, estado: 'recibido' };
+    const solicitud = { id: 1, estado: 'received' };
 
     // Mock the update method of prismaService
     prismaService.solicitud.update = jest.fn().mockResolvedValue({
       ...solicitud,
-      estado: 'preparando',
+      estado: 'preparing',
     });
 
     await service.processSolicitud(solicitud);
 
     expect(prismaService.solicitud.update).toHaveBeenCalledWith({
       where: { id: 1 },
-      data: { estado: 'preparando' },
+      data: { estado: 'preparing' },
     });
   });
 });
