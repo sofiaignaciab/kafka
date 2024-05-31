@@ -28,8 +28,8 @@ export class NotificationsService {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: solicitud.correo,
-      subject: 'Actualización de Estado de Solicitud',
-      text: `Su solicitud con ID ${solicitud.id} ha cambiado su estado a: ${estado}`,
+      subject: 'Request Status Update',
+      text: `Your request with ID ${solicitud.id} has changed to: ${estado}`,
     };
 
     await this.transporter.sendMail(mailOptions);

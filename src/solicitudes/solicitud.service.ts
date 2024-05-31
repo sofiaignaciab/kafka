@@ -26,7 +26,7 @@ export class SolicitudService {
       },
     });
     await this.producerService.produce({
-      topic: 'solicitudes-topic',
+      topic: 'request-topic',
       messages: [{ value: JSON.stringify({ id: solicitud.id, estado: 'received' }) }],
     });
     //return the request

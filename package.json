@@ -25,6 +25,7 @@
     "@nestjs/microservices": "^10.3.8",
     "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "^5.14.0",
+    "axios": "^1.7.2",
     "kafkajs": "^2.2.4",
     "nodemailer": "^6.9.13",
     "reflect-metadata": "^0.2.0",

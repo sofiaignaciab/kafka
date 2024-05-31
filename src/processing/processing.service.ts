@@ -21,7 +21,7 @@ export class ProcessingService implements OnModuleInit, OnApplicationShutdown {
 
   async startProcessingLoop() {
     while (this.processing) {
-      // Obtener todas las solicitudes que no están en el estado final
+      // get requests that are not in the final state
       const solicitudes = await this.prisma.solicitud.findMany({
         where: {
           estado: {
@@ -34,7 +34,7 @@ export class ProcessingService implements OnModuleInit, OnApplicationShutdown {
         await this.processSolicitud(solicitud);
       }
 
-      // Esperar antes de la siguiente iteración
+      // wait for the nest iteration
       await new Promise(resolve => setTimeout(resolve, this.interval));
     }
   }
@@ -43,7 +43,6 @@ export class ProcessingService implements OnModuleInit, OnApplicationShutdown {
     const { id, estado } = solicitud;
     const currentStateIndex = this.estados.indexOf(estado);
 
-    // Enviar notificación para el estado "recibido"
     if (estado === 'received') {
       console.log(`Order id: ${id} received.`)
       await this.notificationService.notifyByEmail(id, estado);
@@ -57,7 +56,7 @@ export class ProcessingService implements OnModuleInit, OnApplicationShutdown {
 
       setTimeout(() => {
         this.producerService.produce({
-          topic: 'solicitudes-topic',
+          topic: 'processing-topic',
           messages: [{ value: JSON.stringify({ id, estado: nextState }) }],
         });
       }, this.interval);
