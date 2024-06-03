@@ -22,12 +22,12 @@ export class SolicitudService {
       data: {
         correo: data.correo,
         itemid: Number(data.itemid),
-        estado: 'recibido',
+        estado: 'received',
       },
     });
     await this.producerService.produce({
-      topic: 'solicitudes-topic',
-      messages: [{ value: JSON.stringify({ id: solicitud.id, estado: 'recibido' }) }],
+      topic: 'request-topic',
+      messages: [{ value: JSON.stringify({ id: solicitud.id, estado: 'received' }) }],
     });
     //return the request
     return {

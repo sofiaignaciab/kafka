@@ -1,45 +1,62 @@
 import { Injectable, OnModuleInit, OnApplicationShutdown } from '@nestjs/common';
-import { ConsumerService } from '../kafka/consumer.service';
 import { PrismaService } from '../prisma.service';
 import { ProducerService } from '../kafka/producer.service';
+import { NotificationsService } from 'src/notification/notification.service';
 
 @Injectable()
 export class ProcessingService implements OnModuleInit, OnApplicationShutdown {
-  private readonly estados = ['recibido', 'preparando', 'entregando', 'finalizado'];
+  private readonly estados = ['received', 'preparing', 'delivering', 'finalized'];
   private readonly interval = 1000; //1 sec
+  private processing = true;
 
   constructor(
-    private readonly consumerService: ConsumerService,
     private readonly prisma: PrismaService,
     private readonly producerService: ProducerService,
+    private readonly notificationService: NotificationsService
   ) {}
 
   async onModuleInit() {
-    await this.consumerService.consume(
-      { topic: 'solicitudes-topic' },
-      {
-        eachMessage: async ({ topic, partition, message }) => {
-          const solicitud = JSON.parse(message.value.toString());
-          console.log(`Processing solicitud: ${JSON.stringify(solicitud)}`);
-          await this.processSolicitud(solicitud);
+    this.startProcessingLoop();
+  }
+
+  async startProcessingLoop() {
+    while (this.processing) {
+      // get requests that are not in the final state
+      const solicitudes = await this.prisma.solicitud.findMany({
+        where: {
+          estado: {
+            not: 'finalizado',
+          },
         },
-      },
-    );
+      });
+
+      for (const solicitud of solicitudes) {
+        await this.processSolicitud(solicitud);
+      }
+
+      // wait for the nest iteration
+      await new Promise(resolve => setTimeout(resolve, this.interval));
+    }
   }
 
   async processSolicitud(solicitud: any) {
     const { id, estado } = solicitud;
     const currentStateIndex = this.estados.indexOf(estado);
-    console.log(`Current state: ${estado}`);
+
+    if (estado === 'received') {
+      console.log(`Order id: ${id} received.`)
+      await this.notificationService.notifyByEmail(id, estado);
+    }
 
     if (currentStateIndex < this.estados.length - 1) {
       const nextState = this.estados[currentStateIndex + 1];
-      console.log(`Updating state to: ${nextState}`);
       await this.updateSolicitudEstado(id, nextState);
+
+      await this.notificationService.notifyByEmail(id, nextState);
 
       setTimeout(() => {
         this.producerService.produce({
-          topic: 'solicitudes-topic',
+          topic: 'processing-topic',
           messages: [{ value: JSON.stringify({ id, estado: nextState }) }],
         });
       }, this.interval);
@@ -51,10 +68,10 @@ export class ProcessingService implements OnModuleInit, OnApplicationShutdown {
       where: { id: Number(id) },
       data: { estado },
     });
-    console.log(`State updated for solicitud ${id} to ${estado}`);
+    console.log(`State updated for id request ${id} to ${estado}.`);
   }
 
   async onApplicationShutdown() {
-    await this.consumerService.onApplicationShutdown();
+    this.processing = false;
   }
 }
